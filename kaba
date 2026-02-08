@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIU Cover Page Generator</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CONTROL PANEL (HIDDEN WHEN PRINTING) --- */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .controls h2 { grid-column: 1 / -1; margin-top: 0; color: #333; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .input-group input, .input-group textarea {
+            padding: 8px; border: 1px solid #ccc; border-radius: 4px;
+        }
+        .full-width { grid-column: 1 / -1; }
+        
+        .btn-print {
+            grid-column: 1 / -1;
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn-print:hover { background-color: #218838; }
+
+        /* --- THE A4 PAPER PREVIEW --- */
+        .page-container {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm; /* Standard margins */
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- DESIGN ELEMENTS --- */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+
+        .logo-box img {
+            width: 100px;
+            height: auto;
+        }
+
+        .uni-name {
+            text-align: left;
+        }
+        .uni-name h1 {
+            font-size: 26px;
+            margin: 0 0 5px 0;
+            color: black;
+        }
+        .uni-name h2 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        /* Info Grid for Course/Assignment */
+        .info-grid {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .info-label {
+            width: 180px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .info-sep {
+            width: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .info-value {
+            flex: 1;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Submission Table */
+        .submission-box {
+            width: 100%;
+            border: 1px solid black;
+            border-collapse: collapse;
+            margin-top: 50px;
+        }
+        .submission-box td {
+            border: 1px solid black;
+            padding: 15px;
+            vertical-align: top;
+            width: 50%;
+        }
+        .box-title {
+            text-decoration: underline;
+            font-weight: normal;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .d-label { width: 90px; }
+        .d-sep { width: 15px; }
+        .d-val { flex: 1; }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            font-size: 16px;
+        }
+        .footer span { font-weight: bold; }
+
+        /* --- PRINT SETTINGS --- */
+        @media print {
+            body { background: white; padding: 0; }
+            .controls { display: none; }
+            .page-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+            }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>Cover Page Generator Controls</h2>
+        
+        <div class="input-group full-width">
+            <label>Upload Logo (Optional)</label>
+            <input type="file" id="logoInput" accept="image/*">
+        </div>
+
+        <div class="input-group">
+            <label>Course Title</label>
+            <input type="text" id="in_cTitle" value="History of English Literature" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Course Code</label>
+            <input type="text" id="in_cCode" value="ENG 1104" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Assignment No</label>
+            <input type="text" id="in_assNo" value="01" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Assignment Title</label>
+            <input type="text" id="in_assTitle" value="From Beowulf to Virginia Woolf" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Student Name</label>
+            <input type="text" id="in_sName" value="Meskat Sarder" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Student ID</label>
+            <input type="text" id="in_sID" value="BAERM54252020" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Batch</label>
+            <input type="text" id="in_sBatch" value="54th" oninput="update()">
+        </div>
+        <div class="input-group">
+            <label>Section</label>
+            <input type="text" id="in_sSection" value="Male" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Teacher Name</label>
+            <input type="text" id="in_tName" value="" oninput="update()">
+        </div>
+        <div class="input-group full-width">
+            <label>Teacher Details (Designation, Dept)</label>
+            <textarea id="in_tDetails" rows="3" oninput="update()">M Salim Uddin, Lecturer,&#13;&#10;Department of English, Bangladesh&#13;&#10;Islami University.</textarea>
+        </div>
+
+        <div class="input-group full-width">
+            <label>Submission Date</label>
+            <input type="text" id="in_date" value="27/08/2025" oninput="update()">
+        </div>
+
+        <button class="btn-print" onclick="window.print()">🖨️ PRINT COVER PAGE</button>
+    </div>
+
+    <div class="page-container">
+        
+        <div class="header">
+            <div class="logo-box">
+                <img id="logoDisplay" src="https://via.placeholder.com/100x100?text=LOGO" alt="BIU Logo">
+            </div>
+            <div class="uni-name">
+                <h1>Bangladesh Islami University</h1>
+                <h2>বাংলাদেশ ইসলামী বিশ্ববিদ্যালয়</h2>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-row">
+                <div class="info-label">Course Title</div>
+                <div class="info-sep">:</div>
+                <div class="info-value" id="out_cTitle">History of English Literature</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Course Code</div>
+                <div class="info-sep">:</div>
+                <div class="info-value" id="out_cCode">ENG 1104</div>
+            </div>
+            <br>
+            <div class="info-row">
+                <div class="info-label">Assignment No</div>
+                <div class="info-sep">:</div>
+                <div class="info-value" id="out_assNo">01</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Assignment Title</div>
+                <div class="info-sep">:</div>
+                <div class="info-value" id="out_assTitle">From Beowulf to Virginia Woolf</div>
+            </div>
+        </div>
+
+        <table class="submission-box">
+            <tr>
+                <td>
+                    <span class="box-title">Submitted By</span>
+                    
+                    <div class="detail-row">
+                        <div class="d-label">Name</div><div class="d-sep">:</div>
+                        <div class="d-val" id="out_sName">Meskat Sarder</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-label">Student ID</div><div class="d-sep">:</div>
+                        <div class="d-val" id="out_sID">BAERM54252020</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-label">Batch</div><div class="d-sep">:</div>
+                        <div class="d-val" id="out_sBatch">54th</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-label">Section</div><div class="d-sep">:</div>
+                        <div class="d-val" id="out_sSection">Male</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="d-label">Department</div><div class="d-sep">:</div>
+                        <div class="d-val">English</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="box-title">Submitted To</span>
+                    
+                    <div class="detail-row">
+                        <div class="d-label">Name</div><div class="d-sep">:</div>
+                        <div class="d-val" id="out_tName"></div>
+                    </div>
+                    <div style="margin-top: 5px; white-space: pre-line;" id="out_tDetails">
+M Salim Uddin, Lecturer,
+Department of English, Bangladesh
+Islami University.
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            Date of Submission &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : <span id="out_date">27/08/2025</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Function to update the preview in real-time
+        function update() {
+            document.getElementById('out_cTitle').innerText = document.getElementById('in_cTitle').value;
+            document.getElementById('out_cCode').innerText = document.getElementById('in_cCode').value;
+            document.getElementById('out_assNo').innerText = document.getElementById('in_assNo').value;
+            document.getElementById('out_assTitle').innerText = document.getElementById('in_assTitle').value;
+            
+            document.getElementById('out_sName').innerText = document.getElementById('in_sName').value;
+            document.getElementById('out_sID').innerText = document.getElementById('in_sID').value;
+            document.getElementById('out_sBatch').innerText = document.getElementById('in_sBatch').value;
+            document.getElementById('out_sSection').innerText = document.getElementById('in_sSection').value;
+            
+            document.getElementById('out_tName').innerText = document.getElementById('in_tName').value;
+            document.getElementById('out_tDetails').innerText = document.getElementById('in_tDetails').value;
+            
+            document.getElementById('out_date').innerText = document.getElementById('in_date').value;
+        }
+
+        // Handle Image Upload
+        document.getElementById('logoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('logoDisplay').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
